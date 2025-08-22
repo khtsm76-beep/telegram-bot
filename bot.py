@@ -10,7 +10,7 @@ df.columns = df.columns.str.strip()
 df["Number"] = df["Number"].astype(str).str.strip()
 
 # ---------- التوكن ----------
-TOKEN = "429620974:AAEXymUdVhTYSYiWJ_lMhAULtitVypoQrq8"
+TOKEN = "7216256882:AAEDFACNn9HT8VzLWuhKPsfxnbEteiqoe64"
 
 # ---------- لوج للتصحيح ----------
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
