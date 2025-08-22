@@ -1,52 +1,49 @@
-import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import pandas as pd
-from telegram.ext import Updater, MessageHandler, Filters
 
-# ---------- إعداد ملف الإكسل ----------
-df = pd.read_excel("results.xlsx", header=0)  # إذا الصف الأول فعلاً عناوين
-df.columns = df.columns.str.strip()
-df["Number"] = df["Number"].astype(str).str.strip()
+# دالة تحميل البيانات
+def load_data():
+    return pd.read_excel("results.xlsx")
 
-# ---------- التوكن ----------
-TOKEN = "7216256882:AAEDFACNn9HT8VzLWuhKPsfxnbEteiqoe64"
+# رسالة البداية
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("📚 أهلاً! أرسل رقم جلوسك لأعطيك نتيجتك.")
 
-# ---------- لوج للتصحيح ----------
-logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                    level=logging.INFO)
-
-# ---------- دالة جلب النتيجة ----------
-def get_result(roll_number):
-    roll_number = str(roll_number).strip()
-    result = df[df["Number"] == roll_number]
-    if not result.empty:
-        row = result.iloc[0]
-        output_lines = []
-        for col in df.columns:     # ← نمر على كل الأعمدة بعد التنظيف
-            if col == "Number":    # ← تجاهل رقم الجلوس
-                continue
-            value = row[col]
-            if isinstance(value, (int, float)):
-                status = "✅" if value >= 50 else "❌"
-                output_lines.append(f"{col}: {value} {status}")
-            else:
-                output_lines.append(f"{col}: {value}")
-        return "\n".join(output_lines)
+# البحث عن النتيجة
+async def get_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    seat = update.message.text.strip()
+    if seat.isdigit():
+        seat = int(seat)
+        df = load_data()
+        result = df[df["Number"] == seat]
+        if not result.empty:
+            name = result.iloc[0]["nam"]
+            total = result.iloc[0]["sum"]
+            avr = result.iloc[0]["AVR"]
+            status = result.iloc[0]["nag"]
+            await update.message.reply_text(
+                f"📄 الاسم: {name}\n"
+                f"📊 المجموع: {total}\n"
+                f"📈 المعدل: {avr}\n"
+                f"✅ النتيجة: {status}"
+            )
+        else:
+            await update.message.reply_text("❌ رقم الجلوس غير موجود.")
     else:
-        return "تأكد أنك أدخلت رقم الجلوس الصحيح"
+        await update.message.reply_text("⚠️ أدخل رقم جلوس صحيح.")
 
-# ---------- استقبال الرسائل ----------
-def handle_message(update, context):
-    roll_number = update.message.text
-    result_text = get_result(roll_number)
-    update.message.reply_text(result_text)
-
-# ---------- تشغيل البوت ----------
+# تشغيل البوت
 def main():
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-    updater.start_polling()
-    updater.idle()
+  TOKEN = "7216256882:AAEDFACNn9HT8VzLWuhKPsfxnbEteiqoe64"
+    app = Application.builder().token(TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, get_result))
+
+    print("✅ البوت يعمل...")
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
+
