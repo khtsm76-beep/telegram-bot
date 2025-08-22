@@ -3,9 +3,7 @@ import pandas as pd
 from telegram.ext import Updater, MessageHandler, Filters
 
 # ---------- إعداد ملف الإكسل ----------
-df = pd.read_excel("results.xlsx")
-
-# تنظيف الأعمدة والبيانات من المسافات
+df = pd.read_excel("results.xlsx", header=0)  # إذا الصف الأول فعلاً عناوين
 df.columns = df.columns.str.strip()
 df["Number"] = df["Number"].astype(str).str.strip()
 
