@@ -35,7 +35,7 @@ async def get_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # تشغيل البوت
 def main():
-  TOKEN = "7216256882:AAEDFACNn9HT8VzLWuhKPsfxnbEteiqoe64"
+  TOKEN = "429620974:AAEXymUdVhTYSYiWJ_lMhAULtitVypoQrq8"
     app = Application.builder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
